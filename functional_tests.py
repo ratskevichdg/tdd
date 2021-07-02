@@ -1,5 +1,7 @@
 from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
 import unittest
+import time
 
 
 class NewVisitorTest(unittest.TestCase):
@@ -17,23 +19,41 @@ class NewVisitorTest(unittest.TestCase):
         # She decided to evaluate the homepage.
         self.browser.get("http://localhost:8000")
 
-        # She sees that the page header talk about urgent to-do lists
+        # She sees that the page header and title talk about urgent to-do lists
         self.assertIn(
             "To-Do", self.browser.title
         ), f"Browser title was {self.browser.title}"
-        self.fail("End this test")
+        header_text = self.browser.find_element_by_tag_name("h1").text
+        self.assertIn(
+            "To-Do", header_text
+        )
 
         # Ей сразу же предлагается ввести элемент списка
-
-        # Она набирает в текстовом поле "Купить павлиньи перья" (ее хобби –
+        inputbox = self.browser.find_element_by_id("id_new_item")
+        self.assertEqual(
+            inputbox.get_attribute('placeholder'),
+            "Enter a to-do item"
+        )
+        
+        # Она набирает в текстовом поле "Buy a peacock feathers" (ее хобби –
         # вязание рыболовных мушек)
+        inputbox.send_keys("Buy a peacock feathers")
 
         # Когда она нажимает enter, страница обновляется, и теперь страница
-        # содержит "1: Купить павлиньи перья" в качестве элемента списка
+        # содержит "1: Buy a peacock feathers" в качестве элемента списка
+        inputbox.send_keys(Keys.ENTER)
+        time.sleep(1)
+
+        table = self.browser.find_element_by_id("id_list_table")
+        rows = table.find_elements_by_tag_name("tr")
+        self.assertTrue(
+            any(row.text == "1: Buy a peacock feathers" for row in rows)
+        )
 
         # Текстовое поле по-прежнему приглашает ее добавить еще один элемент.
         # Она вводит "Сделать мушку из павлиньих перьев"
         # (Эдит очень методична)
+        self.fail("End this test!")
 
         # Страница снова обновляется, и теперь показывает оба элемента ее списка
 
